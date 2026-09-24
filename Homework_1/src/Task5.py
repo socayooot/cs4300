@@ -25,7 +25,6 @@ def print_first_three(list):
 
 def retrieve_student_name(dict):
     name = input("Enter the student you're looking for:  ").strip()
-    print(name)
 
     for key in dict.keys():
         if key == name:
@@ -33,5 +32,13 @@ def retrieve_student_name(dict):
 
     return "Not Found"
 
+def retrieve_student_id(dict):
+    student = input("Enter the student name that you want the id for:  ").strip()
+
+    for name, sid in dict.items():
+        if name == student:
+            return sid
+        
+        return "not found"
 
 
