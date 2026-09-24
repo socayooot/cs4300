@@ -8,5 +8,7 @@ def sort_array(arr):
     return np.sort(arr)
 
 
+# src/Task7.py, replace find_min_max
 def find_min_max(arr):
-    return f"here is the min: {np.min(arr)}, here is the max: {np.max(arr)}"
+    """Return a tuple of (minimum, maximum) values in the array."""
+    return np.min(arr), np.max(arr)

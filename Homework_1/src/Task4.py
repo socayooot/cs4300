@@ -1,20 +1,17 @@
+# src/Task4.py
 """
-This task aims to showcase a function called "calculate_discount" and take in 
-any integer or float and apply the discount.
+calculate_discount takes a price and a discount percentage (any
+numeric type) and returns the discounted price, using duck typing --
+no explicit type() checks. Python itself raises TypeError naturally
+if something non-numeric is passed in.
 """
 
-def calculate_discount(num):
-    type_num = type(num)
 
-    if type_num not in (int, float):
-        print("not a proper input")
-        return
-    
-    hold_num = num
-    
-    discount = float(input("please enter a discount: "))
-    final_discount = discount / 100
+def calculate_discount(price, discount_percent):
+    if price < 0:
+        raise ValueError("price cannot be negative")
+    if not (0 <= discount_percent <= 100):
+        raise ValueError("discount_percent must be between 0 and 100")
 
-    price_minus_discount = hold_num * final_discount
-    final_price = hold_num - price_minus_discount
-    return(final_price)
+    discount_amount = price * (discount_percent / 100)
+    return price - discount_amount
