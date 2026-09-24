@@ -19,9 +19,10 @@ students = {
 }
 
 
+# src/Task5.py
 def print_first_three(books):
-    """Return the first three books, using slicing."""
-    return books[:3]
+    """Print the first three books in the list, using slicing."""
+    print(books[:3])
 
 
 def retrieve_student_name(student_dict, name):

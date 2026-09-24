@@ -7,7 +7,15 @@ if something non-numeric is passed in.
 """
 
 
+# src/Task4.py
 def calculate_discount(price, discount_percent):
+    """
+    Return the final price after applying a discount percentage.
+
+    Works with any numeric type for price and discount_percent (duck
+    typing) rather than checking types explicitly.
+    """
+    ...
     if price < 0:
         raise ValueError("price cannot be negative")
     if not (0 <= discount_percent <= 100):
