@@ -5,6 +5,7 @@ import numpy as np
 
 
 def sort_array(arr):
+    #Return a sorted copy of the given array.
     return np.sort(arr)
 
 

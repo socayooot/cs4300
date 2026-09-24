@@ -26,6 +26,7 @@ def print_first_three(books):
 
 
 def retrieve_student_name(student_dict, name):
+    #Return the given name if it exists as a key in the dict, else 'Not Found'.
     for key in student_dict.keys():
         if key == name:
             return key
@@ -33,6 +34,7 @@ def retrieve_student_name(student_dict, name):
 
 
 def retrieve_student_id(student_dict, name):
+    #Return the student ID for a given name, or 'not found' if absent.
     for student_name, sid in student_dict.items():
         if student_name == name:
             return sid
