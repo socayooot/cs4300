@@ -9,7 +9,7 @@ def count_words_in_file(file_path):
 
     :raises FileNotFoundError: if file_path does not exist.
     """
-    with open(file, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         contents = f.read()
 
     count = len(contents.split())
