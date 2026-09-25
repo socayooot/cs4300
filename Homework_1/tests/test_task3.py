@@ -1,4 +1,3 @@
-# tests/test_task3.py
 import sys
 import os
 
@@ -13,13 +12,14 @@ from Task3 import check_sign, prime_num, sum_first_hundred
     (-5, "negative"),
     (0, "zero"),
 ])
+#checks for the sign number
 def test_check_sign(num, expected):
     assert check_sign(num) == expected
 
-
+#checks for the first ten primes
 def test_prime_num_first_ten():
     assert prime_num(10) == [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 
-
+#check for the sum of the first 100 numbers
 def test_sum_first_hundred():
     assert sum_first_hundred() == 5050

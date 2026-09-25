@@ -1,4 +1,3 @@
-# src/Task5.py
 """
 A list of favorite books and a student database using a dictionary.
 """
@@ -19,7 +18,6 @@ students = {
 }
 
 
-# src/Task5.py
 def print_first_three(books):
     """Print the first three books in the list, using slicing."""
     print(books[:3])

@@ -1,4 +1,3 @@
-# src/Task3.py
 """
 Checks if a number is positive, negative, or zero; finds the first N
 prime numbers; sums 1 to 100.

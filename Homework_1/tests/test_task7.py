@@ -1,4 +1,3 @@
-# tests/test_task7.py
 import sys
 import os
 import numpy as np

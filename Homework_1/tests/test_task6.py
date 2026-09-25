@@ -1,4 +1,3 @@
-# tests/test_task6.py
 import sys
 import os
 
