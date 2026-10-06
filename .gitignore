@@ -1,0 +1,6 @@
+homework1_env/
+homework2_env/
+__pycache__/
+*.pyc
+.pytest_cache/
+db.sqlite3
