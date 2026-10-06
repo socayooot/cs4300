@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-#-%af2rfm3x7_t8(y^z^%y-+_4#=7t+7^x#dh9vp26&zr0w!=l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -128,3 +128,20 @@ MAILERS = {
     },
 }
 
+# Allow form logins/POSTs when running behind DevEdu's app URL (and Render later)
+CSRF_TRUSTED_ORIGINS = ["https://*.devedu.io", "https://*.onrender.com"]
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "movie_list"
+LOGOUT_REDIRECT_URL = "movie_list"
+
+# Anyone can read movies/seats; changing data requires logging in.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+}
