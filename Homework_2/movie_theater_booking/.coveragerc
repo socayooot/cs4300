@@ -1,0 +1,6 @@
+[run]
+source = bookings
+omit =
+    */migrations/*
+    */tests.py
+    */features/*
