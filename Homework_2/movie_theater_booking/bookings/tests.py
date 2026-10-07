@@ -90,6 +90,7 @@ class BookSeatServiceTests(TestCase):
 # --------------------------------------------------------------------------
 class MovieApiTests(APITestCase):
     def setUp(self):
+        self.staff = User.objects.create_user("staffer", password="pw12345!", is_staff=True)
         self.user = User.objects.create_user("alice", password="pw12345!")
         self.movie = make_movie()
 
@@ -114,8 +115,8 @@ class MovieApiTests(APITestCase):
         response = self.client.post("/api/movies/", {"title": "X"})
         self.assertIn(response.status_code, (401, 403))
 
-    def test_create_update_delete_when_logged_in(self):
-        self.client.force_authenticate(self.user)
+    def test_staff_can_create_update_delete(self):
+        self.client.force_authenticate(self.staff)
         payload = {
             "title": "Inception",
             "description": "Dreams.",
@@ -135,7 +136,7 @@ class MovieApiTests(APITestCase):
         self.assertFalse(Movie.objects.filter(pk=movie_id).exists())
 
     def test_create_with_missing_fields_is_400(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.staff)
         response = self.client.post("/api/movies/", {"title": "No date"})
         self.assertEqual(response.status_code, 400)
 
@@ -363,3 +364,75 @@ class SeedCommandTests(TestCase):
         call_command("seed", stdout=StringIO())  # running twice must not duplicate
         self.assertEqual(Movie.objects.count(), 3)
         self.assertEqual(Seat.objects.count(), 24)
+
+
+# --------------------------------------------------------------------------
+# Who may change what through the API
+# --------------------------------------------------------------------------
+class ApiPermissionTests(APITestCase):
+    """Bookings can't be edited, seats are read-only, movies are staff-only."""
+
+    def setUp(self):
+        self.alice = User.objects.create_user("alice", password="pw12345!")
+        self.bob = User.objects.create_user("bob", password="pw12345!")
+        self.movie = make_movie()
+        self.seat1 = Seat.objects.create(seat_number="A1")
+        self.seat2 = Seat.objects.create(seat_number="A2")
+        # alice holds A1, bob holds A2
+        self.alice_booking = book_seat(self.alice, self.movie, self.seat1)
+        self.bob_booking = book_seat(self.bob, self.movie, self.seat2)
+
+    def test_patch_cannot_move_booking_onto_a_taken_seat(self):
+        self.client.force_authenticate(self.alice)
+        response = self.client.patch(
+            f"/api/bookings/{self.alice_booking.id}/", {"seat": self.seat2.id}
+        )
+        self.assertEqual(response.status_code, 405)
+        self.alice_booking.refresh_from_db()
+        self.assertEqual(self.alice_booking.seat, self.seat1)
+        self.assertEqual(Booking.objects.filter(seat=self.seat2).count(), 1)
+
+    def test_put_on_a_booking_is_not_allowed(self):
+        self.client.force_authenticate(self.alice)
+        response = self.client.put(
+            f"/api/bookings/{self.alice_booking.id}/",
+            {"movie": self.movie.id, "seat": self.seat2.id},
+        )
+        self.assertEqual(response.status_code, 405)
+
+    def test_cannot_edit_someone_elses_booking(self):
+        self.client.force_authenticate(self.alice)
+        response = self.client.patch(
+            f"/api/bookings/{self.bob_booking.id}/", {"seat": self.seat1.id}
+        )
+        self.assertEqual(response.status_code, 405)
+        self.bob_booking.refresh_from_db()
+        self.assertEqual(self.bob_booking.seat, self.seat2)
+
+    def test_seats_are_read_only_through_the_api(self):
+        self.client.force_authenticate(self.alice)
+        patched = self.client.patch(f"/api/seats/{self.seat2.id}/", {"booking_status": False})
+        self.assertEqual(patched.status_code, 405)
+        deleted = self.client.delete(f"/api/seats/{self.seat2.id}/")
+        self.assertEqual(deleted.status_code, 405)
+        created = self.client.post("/api/seats/", {"seat_number": "Z9"})
+        self.assertEqual(created.status_code, 405)
+        self.seat2.refresh_from_db()
+        self.assertTrue(self.seat2.booking_status)
+        self.assertFalse(Seat.objects.filter(seat_number="Z9").exists())
+
+    def test_regular_users_cannot_change_movies(self):
+        self.client.force_authenticate(self.alice)
+        payload = {
+            "title": "Hacked",
+            "description": "x",
+            "release_date": "2020-01-01",
+            "duration": 1,
+        }
+        self.assertEqual(self.client.post("/api/movies/", payload).status_code, 403)
+        self.assertEqual(
+            self.client.patch(f"/api/movies/{self.movie.id}/", {"title": "Hacked"}).status_code, 403
+        )
+        self.assertEqual(self.client.delete(f"/api/movies/{self.movie.id}/").status_code, 403)
+        self.movie.refresh_from_db()
+        self.assertEqual(self.movie.title, "The Matrix")

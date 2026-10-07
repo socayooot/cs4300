@@ -3,7 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import get_object_or_404, redirect, render
-from rest_framework import permissions, status, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -13,13 +13,21 @@ from .services import SeatUnavailable, book_seat
 
 
 class MovieViewSet(viewsets.ModelViewSet):
-    """Full CRUD for movies. Anyone can read; writing requires login."""
+    """Full CRUD for movies. Anyone can read; only staff can change movies."""
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
-class SeatViewSet(viewsets.ModelViewSet):
-    """Seat availability, plus a `book` action.
+
+class SeatViewSet(viewsets.ReadOnlyModelViewSet):
+    """Seat availability (read-only) plus a `book` action.
+
+    Seats can't be created, edited or deleted through the API, so nobody can
+    free up a booked seat by hand. Staff manage seats in /admin/.
 
     GET  /api/seats/?available=true   -> only unbooked seats
     POST /api/seats/<id>/book/        -> body: {"movie": <movie id>}
@@ -44,11 +52,32 @@ class SeatViewSet(viewsets.ModelViewSet):
         return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
 
-class BookingViewSet(viewsets.ModelViewSet):
-    """Users book seats (POST) and see their own booking history (GET)."""
+class BookingViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Book a seat (POST), see your own history (GET) or cancel (DELETE).
+
+    There is no update mixin, so PUT/PATCH return 405. A booking can't be
+    edited, because that would skip the double-booking check in book_seat().
+    To change seats, cancel the booking and make a new one.
+    """
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        # Each user only ever sees their own bookings.
+        return Booking.objects.filter(user=self.request.user).select_related("movie", "seat")
+
+    def perform_destroy(self, instance):
+        # Cancelling a booking frees the seat again.
+        seat = instance.seat
+        instance.delete()
+        seat.booking_status = False
+        seat.save(update_fields=["booking_status"])
     def get_queryset(self):
         # Each user only ever sees their own bookings.
         return Booking.objects.filter(user=self.request.user).select_related("movie", "seat")
