@@ -1,0 +1,24 @@
+{% extends 'bookings/base.html' %}
+{% block title %}Book {{ movie.title }}{% endblock %}
+{% block content %}
+<h2>{{ movie.title }}</h2>
+<p class="text-muted">{{ movie.description }}</p>
+<h4 class="mt-4">Choose a seat</h4>
+<form method="post">
+  {% csrf_token %}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    {% for seat in seats %}
+      <div>
+        <input type="radio" class="btn-check" name="seat" id="seat{{ seat.id }}" value="{{ seat.id }}"
+               {% if seat.booking_status %}disabled{% endif %} required>
+        <label class="btn {% if seat.booking_status %}btn-secondary{% else %}btn-outline-success{% endif %}"
+               for="seat{{ seat.id }}">{{ seat.seat_number }}</label>
+      </div>
+    {% empty %}
+      <p>No seats exist yet.</p>
+    {% endfor %}
+  </div>
+  <button type="submit" class="btn btn-primary">Confirm booking</button>
+  <a href="{% url 'movie_list' %}" class="btn btn-link">Back</a>
+</form>
+{% endblock %}

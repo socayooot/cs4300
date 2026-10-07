@@ -1,4 +1,8 @@
-from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -55,3 +59,44 @@ class BookingViewSet(viewsets.ModelViewSet):
         instance.delete()
         seat.booking_status = False
         seat.save(update_fields=["booking_status"])
+
+# ---------------- Template (web page) views ----------------
+# These use the same book_seat() function as the API, so the pages and the
+# API always show and change the same data.
+
+def movie_list(request):
+    """Page 1: list every movie with a Book Now button."""
+    return render(request, "bookings/movie_list.html", {"movies": Movie.objects.all()})
+
+
+@login_required
+def seat_booking(request, movie_id):
+    """Page 2: pick a seat for one movie (GET shows seats, POST books one)."""
+    movie = get_object_or_404(Movie, pk=movie_id)
+    if request.method == "POST":
+        seat = get_object_or_404(Seat, pk=request.POST.get("seat"))
+        try:
+            book_seat(request.user, movie, seat)
+        except SeatUnavailable as exc:
+            messages.error(request, str(exc))
+            return redirect("book_seat", movie_id=movie.id)
+        messages.success(request, f"Booked seat {seat.seat_number} for {movie.title}!")
+        return redirect("booking_history")
+    return render(request, "bookings/seat_booking.html",
+                  {"movie": movie, "seats": Seat.objects.all()})
+
+
+@login_required
+def booking_history(request):
+    """Page 3: the logged-in user's bookings."""
+    bookings = Booking.objects.filter(user=request.user).select_related("movie", "seat")
+    return render(request, "bookings/booking_history.html", {"bookings": bookings})
+
+
+def register(request):
+    """Sign-up page: create an account and log in right away."""
+    form = UserCreationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        login(request, form.save())
+        return redirect("movie_list")
+    return render(request, "registration/register.html", {"form": form})
