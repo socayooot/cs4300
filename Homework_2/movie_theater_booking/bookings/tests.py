@@ -349,3 +349,17 @@ class WebPageTests(TestCase):
         response = self.client.post("/logout/")
         self.assertRedirects(response, "/", fetch_redirect_response=False)
         self.assertContains(self.client.get("/"), "Log in")
+
+# --------------------------------------------------------------------------
+# Management command used by the Render build
+# --------------------------------------------------------------------------
+class SeedCommandTests(TestCase):
+    def test_seed_adds_sample_data_and_is_safe_to_repeat(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        call_command("seed", stdout=StringIO())
+        call_command("seed", stdout=StringIO())  # running twice must not duplicate
+        self.assertEqual(Movie.objects.count(), 3)
+        self.assertEqual(Seat.objects.count(), 24)

@@ -3,3 +3,5 @@ behave-django==2.0.0
 coverage==7.16.2
 Django==6.1.1
 djangorestframework==3.18.1
+gunicorn==26.2.0
+whitenoise==6.12.0
