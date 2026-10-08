@@ -113,4 +113,4 @@ In DevEdu, open it with the "app" button. Pages: / (movies), /history/ (my booki
     Additionally, I worked with Pardot, after feedback, I used Claude to help me 
     close a gap where PATCH on a booking could take a booked seat. Bookings can no 
     longer be edited, seats are read-only through the API, and movie writes are 
-    staff-only. I added tests for each case." Reword it however is accurate for you.
+    staff-only. I added tests for each case."
