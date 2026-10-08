@@ -33,6 +33,8 @@ Note: this runs on Render's free tier, so the first page load after a quiet peri
 
 A movie theater booking app built with Django and Django REST Framework. Users can view movies, book seats, and see their booking history, both through a Bootstrap web interface and through a REST API. The web pages and the API use the same booking logic (bookings/services.py), so they always show the same data and a seat can never be double-booked.
 
+Seats are shared across all movies, as the assignment's Seat model specifies, so a booked seat is unavailable for every movie. A per-showing seat model would be the next improvement.
+
 ### Project structure
 
     Homework_2/
@@ -67,16 +69,17 @@ A movie theater booking app built with Django and Django REST Framework. Users c
 
 ### Running the app
 
+    export DEBUG=True        (local development only; Render keeps it off)
     python manage.py runserver 0.0.0.0:3000
 
 In DevEdu, open it with the "app" button. Pages: / (movies), /history/ (my bookings), /register/, /login/, /admin/.
 
 ### API endpoints
 
-    /api/movies/                  list movies, full CRUD (writes need login)
-    /api/seats/                   list seats (?available=true), seat availability
-    /api/seats/<id>/book/         POST {"movie": <id>} to book a seat
-    /api/bookings/                POST to book a seat, GET for my booking history
+    /api/movies/                  list movies (public); create/edit/delete is staff-only
+    /api/seats/                   read-only: list seats (?available=true) and seat availability
+    /api/seats/<id>/book/         POST {"movie": <id>} to book a seat (login required)
+    /api/bookings/                POST to book a seat, GET my booking history, DELETE to cancel (bookings can't be  edited)
 
 ### Running the tests
 

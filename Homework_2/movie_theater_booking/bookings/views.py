@@ -78,16 +78,6 @@ class BookingViewSet(
         instance.delete()
         seat.booking_status = False
         seat.save(update_fields=["booking_status"])
-    def get_queryset(self):
-        # Each user only ever sees their own bookings.
-        return Booking.objects.filter(user=self.request.user).select_related("movie", "seat")
-
-    def perform_destroy(self, instance):
-        # Cancelling a booking frees the seat again.
-        seat = instance.seat
-        instance.delete()
-        seat.booking_status = False
-        seat.save(update_fields=["booking_status"])
 
 # ---------------- Template (web page) views ----------------
 # These use the same book_seat() function as the API, so the pages and the

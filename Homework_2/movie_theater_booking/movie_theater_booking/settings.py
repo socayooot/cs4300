@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key")
 # Off unless the DEBUG environment variable is exactly "True".
 # SECURITY WARNING: don't run with debug turned on in production!
 # True on your machine, set to False on Render with an environment variable.
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
