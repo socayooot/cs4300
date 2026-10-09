@@ -113,4 +113,35 @@ In DevEdu, open it with the "app" button. Pages: / (movies), /history/ (my booki
     Additionally, I worked with Pardot, after feedback, I used Claude to help me 
     close a gap where PATCH on a booking could take a booked seat. Bookings can no 
     longer be edited, seats are read-only through the API, and movie writes are 
-    staff-only. I added tests for each case."
+    staff-only. I added tests for each case.
+
+### Homework 2: Understanding the Code
+
+The first folder named movie_theater_booking is just the folder that holds
+the project, the second movie_theater_booking within this folder is the 
+actual folder that acts as the configuration center. Settings.py, controls
+the apps that are turned on, database, security, API, and redirects, urls.py
+controls the directory of links, wsgi/asgi.py are how gunicorn are how it contacts
+the django app to talk in WSGI.
+
+This app utilizes gunicorn, render, and django to fully create this app. 
+Gunicorn is used production web server for Python apps, when the browser
+sends a query, this query is first sent to gunicorn which communicates with
+the django app which then queries the database so that everything can run. 
+Whitenoise is also important to mention because gunicorn cannot handle css or
+image files well since the code that was made is written using production
+settings (DEBUG=false) and whitenoise helps style the pages. Render is the 
+platform as a service that was chosen to help host the app. I have never done
+this before and I know that there are things like AWS or Google Kubernetes that
+could be used. 
+
+Models.py acts as a blueprint for the entire site, allowing for the movie, seat,
+and booking selection. These models work with migrations because the file 0001_initial.py
+is the migration file that builds the models. Sercvices.py is the main service that allows
+the user to book a seat. Serializers.py is the code that allows that turns database objects 
+into JSON and back for communication over the internet. Views.py is the acts as the "manager"
+of the entire site, it looks over the site and makes sure that the general use of the
+website is followed. Inside views.py is forces logins, and makes sure that bookings cannot
+be overwritten, etc. 
+
+
